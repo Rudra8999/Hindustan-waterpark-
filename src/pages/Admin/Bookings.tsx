@@ -165,7 +165,7 @@ export default function Bookings() {
 
   const filtered = bookings.filter(b => {
     const matchesSearch = b.userName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         b.userEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         b.userPhone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          b.qrCode?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
     
@@ -211,7 +211,7 @@ export default function Bookings() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
                 type="text" 
-                placeholder="Search by name, email, or QR..."
+                placeholder="Search by name, phone, or QR..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-2xl w-full md:w-80 outline-none focus:border-blue-500 transition-all"
@@ -283,7 +283,7 @@ export default function Bookings() {
                       <span className="text-[10px] font-mono text-blue-500 font-bold uppercase">{scanModal.booking.qrCode}</span>
                     </div>
                     <p className="text-xl font-black text-slate-900 mb-1">{scanModal.booking.userName}</p>
-                    <p className="text-slate-500 font-medium mb-4">{scanModal.booking.userEmail}</p>
+                    <p className="text-slate-500 font-medium mb-4">{scanModal.booking.userPhone}</p>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white p-3 rounded-2xl border border-slate-100">
                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Adults</p>
@@ -359,7 +359,7 @@ export default function Bookings() {
                   <tr key={b.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-8 py-6">
                       <div className="font-bold">{b.userName || 'Guest'}</div>
-                      <div className="text-xs text-slate-400">{b.userEmail}</div>
+                      <div className="text-xs text-slate-400">{b.userPhone}</div>
                       <div className="text-[10px] font-mono text-blue-500 mt-1 uppercase">{b.qrCode}</div>
                     </td>
                     <td className="px-8 py-6 font-medium text-slate-600">
@@ -476,7 +476,7 @@ export default function Bookings() {
                               <div>
                                 <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Customer</p>
                                 <p style={{ fontSize: '24px', fontWeight: '900' }}>{b.userName}</p>
-                                <p style={{ color: '#64748b' }}>{b.userEmail}</p>
+                                <p style={{ color: '#64748b' }}>{b.userPhone}</p>
                               </div>
                               <div>
                                 <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '4px' }}>Visit Date</p>
@@ -535,7 +535,7 @@ export default function Bookings() {
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-bold text-lg">{b.userName || 'Guest'}</div>
-                    <div className="text-xs text-slate-400">{b.userEmail}</div>
+                    <div className="text-xs text-slate-400">{b.userPhone}</div>
                     <div className="text-[10px] font-mono text-blue-500 mt-1 uppercase">{b.qrCode}</div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${

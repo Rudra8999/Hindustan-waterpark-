@@ -45,38 +45,30 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let unsubRole: (() => void) | null = null;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
-      if (firebaseUser) {
-        // Check if user is the hardcoded admin
-        const adminEmails = ['rudrapable2010@gmail.com', 'leaninkclothing@gmail.com'];
-        const isAdminEmail = adminEmails.includes(firebaseUser.email || '');
-        
-        // Set initial role based on email to avoid delay
-        if (isAdminEmail) {
-          setUserRole('admin');
-        }
+      
+      // Cleanup previous role listener if it exists
+      if (unsubRole) {
+        unsubRole();
+        unsubRole = null;
+      }
 
-        // Fetch user role from Firestore
+      if (firebaseUser) {
         const userRef = doc(db, 'users', firebaseUser.uid);
-        const unsubRole = onSnapshot(userRef, (docSnap) => {
+        unsubRole = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            // If user is hardcoded admin but role is not admin, update it
-            if (isAdminEmail && data.role !== 'admin') {
-              updateDoc(userRef, { role: 'admin' }).catch(console.error);
-              setUserRole('admin');
-            } else {
-              setUserRole(data.role as 'admin' | 'user');
-            }
+            setUserRole(data.role as 'admin' | 'user');
           } else {
-            // If user is the hardcoded admin, set role to admin, otherwise user
-            const role = isAdminEmail ? 'admin' : 'user';
+            const role = 'user';
             setUserRole(role);
-            // Create user document if it doesn't exist
             setDoc(userRef, {
-              email: firebaseUser.email,
-              displayName: firebaseUser.displayName,
+              uid: firebaseUser.uid,
+              phoneNumber: firebaseUser.phoneNumber,
+              displayName: firebaseUser.displayName || 'Guest User',
               photoURL: firebaseUser.photoURL,
               role: role,
               createdAt: new Date().toISOString()
@@ -85,22 +77,19 @@ export default function App() {
           setLoading(false);
         }, (error) => {
           console.error("Error fetching user role:", error);
-          // Fallback to email-based role if Firestore fails
-          if (isAdminEmail) {
-            setUserRole('admin');
-          } else {
-            setUserRole('user');
-          }
+          setUserRole('user');
           setLoading(false);
         });
-        return () => unsubRole();
       } else {
         setUserRole(null);
         setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (unsubRole) unsubRole();
+    };
   }, []);
 
   if (loading) {

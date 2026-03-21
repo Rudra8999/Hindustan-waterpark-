@@ -46,7 +46,7 @@ export default function Checkout() {
       const qrCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       const booking = {
         userId: user.uid,
-        userEmail: user.email,
+        userPhone: user.phoneNumber,
         userName: user.displayName,
         adults: bookingData.adults,
         kids: bookingData.kids,
@@ -180,11 +180,12 @@ export default function Checkout() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Mobile Number</label>
                   <input 
-                    type="email" 
-                    defaultValue={user?.email || ''}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500"
+                    type="tel" 
+                    defaultValue={user?.phoneNumber || ''}
+                    readOnly
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none text-slate-500"
                   />
                 </div>
               </div>

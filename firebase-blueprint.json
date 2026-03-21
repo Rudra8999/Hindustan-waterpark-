@@ -6,12 +6,12 @@
       "type": "object",
       "properties": {
         "uid": { "type": "string", "description": "Firebase Auth UID" },
-        "email": { "type": "string", "format": "email" },
+        "phoneNumber": { "type": "string" },
         "displayName": { "type": "string" },
         "role": { "type": "string", "enum": ["admin", "user"] },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["uid", "email", "role"]
+      "required": ["uid", "phoneNumber", "role"]
     },
     "Booking": {
       "title": "Booking",
@@ -19,7 +19,7 @@
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
-        "userEmail": { "type": "string" },
+        "userPhone": { "type": "string" },
         "userName": { "type": "string" },
         "adults": { "type": "integer" },
         "kids": { "type": "integer" },

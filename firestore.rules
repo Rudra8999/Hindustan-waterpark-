@@ -9,7 +9,7 @@ service cloud.firestore {
     // Document ID: {userId}
     // Fields:
     //   - uid: string (required) - Firebase Auth UID
-    //   - email: string (required) - User email
+    //   - phoneNumber: string (required) - User phone number
     //   - displayName: string (optional) - User name
     //   - role: string (required) - 'admin' or 'user'
     //   - createdAt: string (required) - ISO date string
@@ -18,7 +18,7 @@ service cloud.firestore {
     // Document ID: {bookingId}
     // Fields:
     //   - userId: string (required) - UID of the user who booked
-    //   - userEmail: string (required)
+    //   - userPhone: string (required)
     //   - adults: number (required)
     //   - kids: number (required)
     //   - totalPrice: number (required)
@@ -55,13 +55,12 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-         (request.auth.token.email == "rudrapable2010@gmail.com" || request.auth.token.email == "leaninkclothing@gmail.com"));
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
 
     function isValidUser(data) {
-      return data.keys().hasAll(['email', 'role']) &&
-             data.email is string &&
+      return data.keys().hasAll(['phoneNumber', 'role']) &&
+             data.phoneNumber is string &&
              data.role in ['admin', 'user'];
     }
 
@@ -73,8 +72,7 @@ service cloud.firestore {
              data.totalPrice is number &&
              data.visitDate is string &&
              data.status in ['pending', 'confirmed', 'cancelled'] &&
-             (!('used' in data) || data.used is bool) &&
-             (!('paymentProof' in data) || data.paymentProof is string);
+             (!('userPhone' in data) || data.userPhone is string);
     }
 
     function isValidSetting(data) {
