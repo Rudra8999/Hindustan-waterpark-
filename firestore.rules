@@ -9,7 +9,7 @@ service cloud.firestore {
     // Document ID: {userId}
     // Fields:
     //   - uid: string (required) - Firebase Auth UID
-    //   - phoneNumber: string (required) - User phone number
+    //   - email: string (required) - User email address
     //   - displayName: string (optional) - User name
     //   - role: string (required) - 'admin' or 'user'
     //   - createdAt: string (required) - ISO date string
@@ -18,7 +18,7 @@ service cloud.firestore {
     // Document ID: {bookingId}
     // Fields:
     //   - userId: string (required) - UID of the user who booked
-    //   - userPhone: string (required)
+    //   - userEmail: string (required)
     //   - adults: number (required)
     //   - kids: number (required)
     //   - totalPrice: number (required)
@@ -55,12 +55,13 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+         (request.auth.token.email == "leaninkclothing@gmail.com" && request.auth.token.email_verified == true));
     }
 
     function isValidUser(data) {
-      return data.keys().hasAll(['phoneNumber', 'role']) &&
-             data.phoneNumber is string &&
+      return data.keys().hasAll(['email', 'role']) &&
+             data.email is string &&
              data.role in ['admin', 'user'];
     }
 
@@ -72,7 +73,7 @@ service cloud.firestore {
              data.totalPrice is number &&
              data.visitDate is string &&
              data.status in ['pending', 'confirmed', 'cancelled'] &&
-             (!('userPhone' in data) || data.userPhone is string);
+             (!('userEmail' in data) || data.userEmail is string);
     }
 
     function isValidSetting(data) {

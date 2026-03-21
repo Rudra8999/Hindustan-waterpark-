@@ -1,31 +1,28 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signOut, onAuthStateChanged, User as FirebaseUser, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { 
+  getAuth, 
+  signOut, 
+  onAuthStateChanged, 
+  User as FirebaseUser, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  updateProfile
+} from 'firebase/auth';
+
+export { 
+  signOut, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  updateProfile
+};
+export type { FirebaseUser };
 import { getFirestore, doc, getDoc, setDoc, collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, getDocFromServer, Timestamp } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-
-// Helper for Phone Auth
-export const setupRecaptcha = (containerId: string) => {
-  return new RecaptchaVerifier(auth, containerId, {
-    'size': 'invisible',
-    'callback': (response: any) => {
-      // reCAPTCHA solved, allow signInWithPhoneNumber.
-    }
-  });
-};
-
-export const signInWithPhone = async (phoneNumber: string, appVerifier: RecaptchaVerifier): Promise<ConfirmationResult> => {
-  try {
-    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-    return confirmationResult;
-  } catch (error) {
-    console.error('Error signing in with Phone:', error);
-    throw error;
-  }
-};
 
 // Error handling helper as per instructions
 export enum OperationType {

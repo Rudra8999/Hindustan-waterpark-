@@ -1,74 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { setupRecaptcha, signInWithPhone } from '../firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, auth } from '../firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Waves, Phone, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
-import { ConfirmationResult } from 'firebase/auth';
+import { Waves, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<'phone' | 'code'>('phone');
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
 
-  useEffect(() => {
-    // Cleanup recaptcha on unmount
-    return () => {
-      const recaptchaContainer = document.getElementById('recaptcha-container');
-      if (recaptchaContainer) recaptchaContainer.innerHTML = '';
-    };
-  }, []);
-
-  const handleSendCode = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phoneNumber || phoneNumber.length < 10) {
-      setError('Please enter a valid phone number with country code (e.g., +919876543210)');
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const appVerifier = setupRecaptcha('recaptcha-container');
-      const result = await signInWithPhone(phoneNumber, appVerifier);
-      setConfirmationResult(result);
-      setStep('code');
-    } catch (err: any) {
-      console.error("Phone auth failed:", err);
-      setError(err.message || 'Failed to send verification code. Please try again.');
-      // Reset recaptcha
-      const recaptchaContainer = document.getElementById('recaptcha-container');
-      if (recaptchaContainer) recaptchaContainer.innerHTML = '';
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!verificationCode || verificationCode.length !== 6) {
-      setError('Please enter the 6-digit verification code.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (confirmationResult) {
-        await confirmationResult.confirm(verificationCode);
-        navigate(from, { replace: true });
+      if (mode === 'signup') {
+        if (!displayName) {
+          setError('Please enter your name.');
+          setLoading(false);
+          return;
+        }
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, { displayName });
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
       }
+      navigate(from, { replace: true });
     } catch (err: any) {
-      console.error("Verification failed:", err);
-      setError('Invalid verification code. Please try again.');
+      console.error("Auth failed:", err);
+      setError(err.message || 'Authentication failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -87,88 +55,76 @@ export default function Login() {
         
         <h1 className="text-3xl font-black mb-4 uppercase tracking-tight">Hindustan Waterpark</h1>
         <p className="text-slate-500 mb-8">
-          {step === 'phone' 
-            ? 'Enter your mobile number to receive a verification code.' 
-            : `Enter the 6-digit code sent to ${phoneNumber}`}
+          {mode === 'login' ? 'Sign in to your account' : 'Create a new account'}
         </p>
 
-        <AnimatePresence mode="wait">
-          {step === 'phone' ? (
-            <motion.form
-              key="phone-step"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              onSubmit={handleSendCode}
-              className="space-y-4"
-            >
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                <input
-                  type="tel"
-                  placeholder="+91 98765 43210"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition-all font-medium"
-                  required
-                />
-              </div>
-              
-              {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 disabled:opacity-70"
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <AnimatePresence mode="wait">
+            {mode === 'signup' && (
+              <motion.div
+                key="name-input"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="relative"
               >
-                {loading ? <Loader2 className="animate-spin" /> : 'Send OTP'}
-                {!loading && <ArrowRight size={20} />}
-              </button>
-            </motion.form>
-          ) : (
-            <motion.form
-              key="code-step"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              onSubmit={handleVerifyCode}
-              className="space-y-4"
-            >
-              <div className="relative">
-                <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type="text"
-                  placeholder="Enter 6-digit code"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  maxLength={6}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition-all font-medium tracking-[0.5em] text-center"
-                  required
+                  placeholder="Full Name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition-all font-medium"
+                  required={mode === 'signup'}
                 />
-              </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition-all font-medium"
+              required
+            />
+          </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 disabled:opacity-70"
-              >
-                {loading ? <Loader2 className="animate-spin" /> : 'Verify & Login'}
-              </button>
-              
-              <button
-                type="button"
-                onClick={() => setStep('phone')}
-                className="text-blue-600 text-sm font-bold hover:underline"
-              >
-                Change Phone Number
-              </button>
-            </motion.form>
-          )}
-        </AnimatePresence>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-blue-500 focus:bg-white outline-none transition-all font-medium"
+              required
+            />
+          </div>
+          
+          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
 
-        <div id="recaptcha-container"></div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 disabled:opacity-70"
+          >
+            {loading ? <Loader2 className="animate-spin" /> : (mode === 'login' ? 'Sign In' : 'Sign Up')}
+            {!loading && <ArrowRight size={20} />}
+          </button>
+        </form>
+
+        <div className="mt-8">
+          <button
+            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+            className="text-blue-600 font-bold hover:underline"
+          >
+            {mode === 'login' ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+          </button>
+        </div>
 
         <div className="mt-12 pt-8 border-t border-slate-50">
           <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">

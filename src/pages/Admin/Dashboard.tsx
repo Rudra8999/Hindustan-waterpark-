@@ -135,7 +135,7 @@ export default function Dashboard() {
                   <tr key={b.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-8 py-6">
                       <div className="font-bold">{b.userName || 'Guest'}</div>
-                      <div className="text-xs text-slate-400">{b.userPhone}</div>
+                      <div className="text-xs text-slate-400">{b.userEmail}</div>
                     </td>
                     <td className="px-8 py-6 font-medium text-slate-600">
                       {format(new Date(b.visitDate), 'PP')}
@@ -174,7 +174,7 @@ export default function Dashboard() {
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-bold">{b.userName || 'Guest'}</div>
-                    <div className="text-xs text-slate-400">{b.userPhone}</div>
+                    <div className="text-xs text-slate-400">{b.userEmail}</div>
                   </div>
                   <span className={cn(
                     "px-3 py-1 rounded-full text-[10px] font-bold uppercase",

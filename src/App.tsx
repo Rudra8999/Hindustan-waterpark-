@@ -67,7 +67,7 @@ export default function App() {
             setUserRole(role);
             setDoc(userRef, {
               uid: firebaseUser.uid,
-              phoneNumber: firebaseUser.phoneNumber,
+              email: firebaseUser.email,
               displayName: firebaseUser.displayName || 'Guest User',
               photoURL: firebaseUser.photoURL,
               role: role,
