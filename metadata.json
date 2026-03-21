@@ -1,0 +1,5 @@
+{
+  "name": "Hindustan Waterpark",
+  "description": "Modern, immersive website for Hindustan Waterpark in Jafrabad, Jalna. Features playful animations, online booking, and admin dashboard.",
+  "requestFramePermissions": ["geolocation", "camera"]
+}

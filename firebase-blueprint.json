@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and role information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Ticket booking information.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userName": { "type": "string" },
+        "adults": { "type": "integer" },
+        "kids": { "type": "integer" },
+        "totalPrice": { "type": "number" },
+        "bookingDate": { "type": "string", "format": "date" },
+        "visitDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled"] },
+        "paymentId": { "type": "string" },
+        "qrCode": { "type": "string" }
+      },
+      "required": ["userId", "adults", "kids", "totalPrice", "visitDate", "status"]
+    },
+    "Attraction": {
+      "title": "Attraction",
+      "description": "Waterpark ride or zone.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string", "enum": ["kids", "family", "thrill"] },
+        "order": { "type": "integer" }
+      },
+      "required": ["name", "description", "imageUrl", "category"]
+    },
+    "Event": {
+      "title": "Event",
+      "description": "Special events or offers.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["title", "description", "isActive"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global park settings like ticket price.",
+      "type": "object",
+      "properties": {
+        "ticketPrice": { "type": "number" },
+        "parkStatus": { "type": "string", "enum": ["open", "closed"] },
+        "contactPhone": { "type": "string" },
+        "whatsappNumber": { "type": "string" },
+        "socialLinks": {
+          "type": "object",
+          "properties": {
+            "facebook": { "type": "string" },
+            "instagram": { "type": "string" },
+            "youtube": { "type": "string" },
+            "twitter": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user profiles."
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "All ticket bookings."
+    },
+    "/attractions/{attractionId}": {
+      "schema": "Attraction",
+      "description": "Waterpark attractions."
+    },
+    "/events/{eventId}": {
+      "schema": "Event",
+      "description": "Special events and offers."
+    },
+    "/settings/global": {
+      "schema": "Settings",
+      "description": "Global configuration."
+    }
+  }
+}

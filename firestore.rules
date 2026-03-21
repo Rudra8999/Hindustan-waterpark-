@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required) - Firebase Auth UID
+    //   - email: string (required) - User email
+    //   - displayName: string (optional) - User name
+    //   - role: string (required) - 'admin' or 'user'
+    //   - createdAt: string (required) - ISO date string
+    //
+    // Collection: bookings
+    // Document ID: {bookingId}
+    // Fields:
+    //   - userId: string (required) - UID of the user who booked
+    //   - userEmail: string (required)
+    //   - adults: number (required)
+    //   - kids: number (required)
+    //   - totalPrice: number (required)
+    //   - visitDate: string (required) - YYYY-MM-DD
+    //   - status: string (required) - 'pending', 'confirmed', 'cancelled'
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: attractions
+    // Document ID: {attractionId}
+    // Fields:
+    //   - name: string (required)
+    //   - description: string (required)
+    //   - imageUrl: string (required)
+    //   - category: string (required)
+    //
+    // Collection: settings
+    // Document ID: global
+    // Fields:
+    //   - ticketPrice: number
+    //   - parkStatus: string
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+         (request.auth.token.email == "rudrapable2010@gmail.com" || request.auth.token.email == "leaninkclothing@gmail.com"));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role']) &&
+             data.email is string &&
+             data.role in ['admin', 'user'];
+    }
+
+    function isValidBooking(data) {
+      return data.keys().hasAll(['userId', 'adults', 'kids', 'totalPrice', 'visitDate', 'status']) &&
+             data.userId is string &&
+             data.adults is number && data.adults >= 0 &&
+             data.kids is number && data.kids >= 0 &&
+             data.totalPrice is number &&
+             data.visitDate is string &&
+             data.status in ['pending', 'confirmed', 'cancelled'] &&
+             (!('used' in data) || data.used is bool) &&
+             (!('paymentProof' in data) || data.paymentProof is string);
+    }
+
+    function isValidSetting(data) {
+      return data.keys().hasAny(['ticketPrice', 'parkStatus', 'contactPhone', 'whatsappNumber', 'socialLinks', 'qrPaymentImage']) &&
+             (!('ticketPrice' in data) || data.ticketPrice is number) &&
+             (!('parkStatus' in data) || data.parkStatus is string) &&
+             (!('contactPhone' in data) || data.contactPhone is string) &&
+             (!('whatsappNumber' in data) || data.whatsappNumber is string) &&
+             (!('socialLinks' in data) || data.socialLinks is map) &&
+             (!('qrPaymentImage' in data) || data.qrPaymentImage is string);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isAdmin() || (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role);
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidBooking(request.resource.data);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /attractions/{attractionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidSetting(request.resource.data);
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
