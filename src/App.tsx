@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Attractions from './pages/Attractions';
 import Gallery from './pages/Gallery';
+import Events from './pages/Events';
 import Booking from './pages/Booking';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
@@ -61,9 +62,17 @@ export default function App() {
         unsubRole = onSnapshot(userRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setUserRole(data.role as 'admin' | 'user');
+            const currentRole = data.role as 'admin' | 'user';
+            
+            // Auto-upgrade to admin if email matches
+            if (firebaseUser.email === 'leaninkclothing@gmail.com' && currentRole !== 'admin') {
+              updateDoc(userRef, { role: 'admin' }).catch(console.error);
+              setUserRole('admin');
+            } else {
+              setUserRole(currentRole);
+            }
           } else {
-            const role = 'user';
+            const role = firebaseUser.email === 'leaninkclothing@gmail.com' ? 'admin' : 'user';
             setUserRole(role);
             setDoc(userRef, {
               uid: firebaseUser.uid,
@@ -116,6 +125,7 @@ export default function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/attractions" element={<Attractions />} />
                 <Route path="/gallery" element={<Gallery />} />
+                <Route path="/events" element={<Events />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/login" element={<Login />} />
                 

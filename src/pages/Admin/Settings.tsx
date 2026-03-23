@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
-import { Settings as SettingsIcon, Save, Info, AlertCircle, QrCode } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Info, AlertCircle, QrCode, CalendarDays } from 'lucide-react';
 import { motion } from 'motion/react';
 import FileUploader from '../../components/FileUploader';
 
@@ -17,7 +17,10 @@ export default function AdminSettings() {
       youtube: '',
       twitter: ''
     },
-    qrPaymentImage: ''
+    qrPaymentImage: '',
+    festivalTitle: 'SUMMER SPLASH FESTIVAL 2026',
+    festivalDate: '2026-05-01T00:00:00',
+    festivalDescription: "Get ready for the biggest water festival of the year! Live music, special water games, and exclusive food stalls. Don't miss out!"
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -119,7 +122,7 @@ export default function AdminSettings() {
                     <input 
                       type="text" 
                       value={settings.socialLinks?.facebook || ''}
-                      onChange={(e) => setSettings({...settings, socialLinks: {...(settings.socialLinks || {}), facebook: e.target.value}})}
+                      onChange={(e) => setSettings({...settings, socialLinks: {...settings.socialLinks, facebook: e.target.value}})}
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-medium outline-none focus:border-blue-500"
                       placeholder="https://facebook.com/..."
                     />
@@ -129,7 +132,7 @@ export default function AdminSettings() {
                     <input 
                       type="text" 
                       value={settings.socialLinks?.instagram || ''}
-                      onChange={(e) => setSettings({...settings, socialLinks: {...(settings.socialLinks || {}), instagram: e.target.value}})}
+                      onChange={(e) => setSettings({...settings, socialLinks: {...settings.socialLinks, instagram: e.target.value}})}
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-medium outline-none focus:border-blue-500"
                       placeholder="https://instagram.com/..."
                     />
@@ -139,7 +142,7 @@ export default function AdminSettings() {
                     <input 
                       type="text" 
                       value={settings.socialLinks?.youtube || ''}
-                      onChange={(e) => setSettings({...settings, socialLinks: {...(settings.socialLinks || {}), youtube: e.target.value}})}
+                      onChange={(e) => setSettings({...settings, socialLinks: {...settings.socialLinks, youtube: e.target.value}})}
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-medium outline-none focus:border-blue-500"
                       placeholder="https://youtube.com/..."
                     />
@@ -149,9 +152,45 @@ export default function AdminSettings() {
                     <input 
                       type="text" 
                       value={settings.socialLinks?.twitter || ''}
-                      onChange={(e) => setSettings({...settings, socialLinks: {...(settings.socialLinks || {}), twitter: e.target.value}})}
+                      onChange={(e) => setSettings({...settings, socialLinks: {...settings.socialLinks, twitter: e.target.value}})}
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-medium outline-none focus:border-blue-500"
                       placeholder="https://twitter.com/..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                  <CalendarDays size={20} className="text-blue-500" /> FESTIVAL SETTINGS
+                </h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Festival Title</label>
+                    <input 
+                      type="text" 
+                      value={settings.festivalTitle}
+                      onChange={(e) => setSettings({...settings, festivalTitle: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-bold outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Festival Date (ISO Format)</label>
+                      <input 
+                        type="datetime-local" 
+                        value={settings.festivalDate?.slice(0, 16)}
+                        onChange={(e) => setSettings({...settings, festivalDate: new Date(e.target.value).toISOString()})}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-medium outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Festival Description</label>
+                    <textarea 
+                      value={settings.festivalDescription}
+                      onChange={(e) => setSettings({...settings, festivalDescription: e.target.value})}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 font-medium outline-none focus:border-blue-500 min-h-[100px]"
                     />
                   </div>
                 </div>

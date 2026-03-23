@@ -1,11 +1,24 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { Waves, ShieldCheck, Utensils, Ticket, ArrowRight, Star, CalendarDays, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import CountdownTimer from '../components/CountdownTimer';
+import { db } from '../firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 export default function Home() {
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'settings', 'global'), (doc) => {
+      if (doc.exists()) {
+        setSettings(doc.data());
+      }
+    });
+    return () => unsub();
+  }, []);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -155,18 +168,19 @@ export default function Home() {
                 <CalendarDays size={24} />
                 <span className="font-bold uppercase tracking-widest text-sm">Upcoming Event</span>
               </div>
-              <h2 className="text-4xl md:text-6xl font-black mb-6">SUMMER SPLASH <br />FESTIVAL 2026</h2>
+              <h2 className="text-4xl md:text-6xl font-black mb-6 uppercase tracking-tighter">
+                {settings?.festivalTitle || 'SUMMER SPLASH FESTIVAL 2026'}
+              </h2>
               <p className="text-lg text-slate-600 mb-8 max-w-lg">
-                Get ready for the biggest water festival of the year! Live music, 
-                special water games, and exclusive food stalls. Don't miss out!
+                {settings?.festivalDescription || "Get ready for the biggest water festival of the year! Live music, special water games, and exclusive food stalls. Don't miss out!"}
               </p>
-              <Link to="/booking" className="text-blue-600 font-bold flex items-center gap-2 hover:gap-3 transition-all">
-                Pre-book Tickets <ArrowRight size={20} />
+              <Link to="/events" className="text-blue-600 font-bold flex items-center gap-2 hover:gap-3 transition-all">
+                Learn More About Festival <ArrowRight size={20} />
               </Link>
             </div>
             <div className="relative">
               <CountdownTimer 
-                targetDate="2026-05-01T00:00:00" 
+                targetDate={settings?.festivalDate || "2026-05-01T00:00:00"} 
                 title="Hurry! Festival Starts In:" 
               />
               {/* Decorative background element */}

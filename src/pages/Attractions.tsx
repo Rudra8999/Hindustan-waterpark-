@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
-import { Waves, Star, ShieldCheck, Zap, Info, ArrowRight } from 'lucide-react';
+import { Waves, Star, ShieldCheck, Zap, Info, ArrowRight, Box } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db } from '../firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
+import RidePreview3D from '../components/RidePreview3D';
 
 export default function Attractions() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,7 +40,7 @@ export default function Attractions() {
           intensity: 'High'
         },
         {
-          id: 'wave',
+          id: 'wave-pool',
           name: 'Wave Paradise',
           category: 'family',
           description: 'Experience the ocean waves right here in Jafrabad.',
@@ -47,11 +48,27 @@ export default function Attractions() {
           intensity: 'Medium'
         },
         {
-          id: 'splash',
+          id: 'splash-kingdom',
           name: 'Splash Kingdom',
           category: 'kids',
           description: 'A safe and colorful playground for our little guests.',
           imageUrl: 'https://picsum.photos/seed/splash/800/600',
+          intensity: 'Low'
+        },
+        {
+          id: 'pink-slide',
+          name: 'Pink Panther Slide',
+          category: 'thrill',
+          description: 'A high-speed twisting slide for the brave.',
+          imageUrl: 'https://picsum.photos/seed/slide/800/600',
+          intensity: 'High'
+        },
+        {
+          id: 'lazy-river',
+          name: 'Lazy River',
+          category: 'family',
+          description: 'Relax and float along our scenic river.',
+          imageUrl: 'https://picsum.photos/seed/river/800/600',
           intensity: 'Low'
         }
       ]);
@@ -150,18 +167,22 @@ export default function Attractions() {
               </div>
             </div>
 
-            <div className="w-full md:w-1/2 min-h-[300px] flex items-center justify-center">
+            <div className="w-full md:w-1/2 min-h-[400px] flex items-center justify-center relative bg-slate-900/5 rounded-[3rem] overflow-hidden">
               <AnimatePresence mode="wait">
                 {selectedRide || hoveredRide ? (
                   <motion.div
                     key={selectedRide?.id || hoveredRide}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="w-full bg-slate-50 rounded-[2rem] p-8 border border-slate-200 relative overflow-hidden group"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.2 }}
+                    className="w-full h-full flex flex-col items-center justify-center p-8"
                   >
-                    <div className="relative z-10">
-                      <div className="flex items-center gap-3 mb-4">
+                    <div className="w-full h-[300px] mb-6">
+                      <RidePreview3D rideId={selectedRide?.id || hoveredRide || ''} />
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-3 mb-4">
                         <span className={cn(
                           "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white",
                           categories.find(c => c.id === (selectedRide?.category || attractions.find(r => r.id === hoveredRide)?.category))?.bg
@@ -175,23 +196,18 @@ export default function Attractions() {
                       <h3 className="text-3xl font-black mb-4 uppercase">
                         {selectedRide?.name || attractions.find(r => r.id === hoveredRide)?.name}
                       </h3>
-                      <p className="text-slate-600 mb-8 leading-relaxed">
+                      <p className="text-slate-600 mb-8 leading-relaxed max-w-md mx-auto">
                         {selectedRide?.description || attractions.find(r => r.id === hoveredRide)?.description}
                       </p>
-                      <button className="flex items-center gap-2 text-blue-600 font-bold hover:gap-3 transition-all">
+                      <button className="flex items-center justify-center gap-2 text-blue-600 font-bold hover:gap-3 transition-all mx-auto">
                         View Full Details <ArrowRight size={18} />
                       </button>
-                    </div>
-                    
-                    {/* Background Preview (Video or Image) */}
-                    <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
-                      <Zap size={200} className="text-slate-200 absolute -right-10 -bottom-10 rotate-12" />
                     </div>
                   </motion.div>
                 ) : (
                   <div className="text-center text-slate-400">
-                    <Info size={48} className="mx-auto mb-4 opacity-20" />
-                    <p className="font-medium">Hover or click a ride icon to see a preview</p>
+                    <Box size={64} className="mx-auto mb-4 opacity-20 animate-pulse" />
+                    <p className="font-medium">Interact with a ride to see its 3D preview</p>
                   </div>
                 )}
               </AnimatePresence>
@@ -235,17 +251,26 @@ export default function Attractions() {
               key={attr.name}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
+              whileHover={{ y: -10, rotateX: 5, rotateY: 5 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-[2rem] overflow-hidden shadow-xl hover:shadow-2xl transition-shadow border border-slate-100"
+              className="bg-white rounded-[2rem] overflow-hidden shadow-xl hover:shadow-2xl transition-all border border-slate-100 group perspective-1000"
             >
-              <div className="relative aspect-square">
+              <div className="relative aspect-square overflow-hidden">
                 <img 
                   src={attr.imageUrl || attr.image} 
                   alt={attr.name} 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-900">
+                
+                {/* 3D Overlay on Hover */}
+                <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                   <div className="w-48 h-48">
+                      <RidePreview3D rideId={attr.id} />
+                   </div>
+                </div>
+
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-900 z-10">
                   {attr.intensity || 'Medium'} Intensity
                 </div>
               </div>
